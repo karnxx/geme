@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://drcw3mwk48bby"]
+
+[ext_resource type="Script" uid="uid://gixnn5cy6one" path="res://circledrawer.gd" id="1_mndnc"]
+
+[node name="circledrawer" type="Node2D" unique_id=973286806]
+script = ExtResource("1_mndnc")

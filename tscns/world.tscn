@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bet3ea52vko10"]
+
+[ext_resource type="PackedScene" uid="uid://gcg7telxx26j" path="res://tscns/plrr.tscn" id="1_smp2l"]
+
+[node name="world" type="Node2D" unique_id=1531642626]
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=756622155]
+polygon = PackedVector2Array(2, 1, 187, -1, 455, 1, 331, 102, 335, 198, 398, 273, 327, 319, 150, 341, -4, 333)
+
+[node name="Polygon2D2" type="Polygon2D" parent="." unique_id=1648016449]
+position = Vector2(557, 95)
+scale = Vector2(-0.0021786492, 0.7222222)
+color = Color(0, 0, 0, 1)
+polygon = PackedVector2Array(2, 1, 187, -1, 455, 1, 104189.01, 3.1538448, 89501, 213.61539, 46814, 339.6154, -127147.016, 172.07693, -107410.016, 87.61539, -61051.016, 26.692307)
+
+[node name="plrr" parent="." unique_id=1867672344 instance=ExtResource("1_smp2l")]

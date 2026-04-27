@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="armor" format=3 uid="uid://bxkc230u714ha"]
+
+[ext_resource type="Script" uid="uid://0bx5k6styrnj" path="res://tscns/armor/armor.gd" id="1_uaxrg"]
+
+[resource]
+script = ExtResource("1_uaxrg")
+type = null
+metadata/_custom_type_script = "uid://0bx5k6styrnj"
