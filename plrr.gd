@@ -3,7 +3,7 @@ var spd := 700
 @export var curve :Curve
 var t = 0
 var last_dir = Vector2.ZERO
-var candraw = true
+var candraw = false
 
 var plrstart
 var plrend
@@ -27,7 +27,8 @@ var stm =0
 var helm = null
 var chest = null
 
-
+var isdashing = false
+var isstancing = false
 
 func _ready() -> void:
 	InventoryManager.plrstantiate(self)
@@ -35,6 +36,10 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	var dir = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down").normalized()
+	
+	if isdashing:
+		move_and_slide()
+		return
 	
 	if dir:
 		velocity = dir * spd * curve.sample(t)
@@ -54,11 +59,35 @@ func _physics_process(delta: float) -> void:
 					if tip.distance_to(i.position) < i.radius:
 						i.queue_free()
 						if is_instance_valid(last_atker):
-							last_atker.get_dmged(atk)
+							last_atker.get_dmged(atk, last_atker)
 						#some dmging code
-	
+	if Input.is_action_just_pressed("ui_accept"):
+		dash()
 	move_and_slide()
 	player_line()
+
+func parry_stance():
+	isstancing = true
+	candraw = true
+	get_tree().create_timer(2).timeout.connect(parry_over)
+
+func parry_over():
+	candraw = false
+	isstancing = false
+
+func get_atked(sequence, dmg, who):
+	if isstancing:
+		atk_sequence(sequence[0], sequence[1], sequence[2])
+	else:
+		get_dmged(dmg, who)
+
+func dash():
+	isdashing = true
+	var lastvelo = velocity
+	velocity *= 2
+	await get_tree().create_timer(0.2).timeout
+	velocity = lastvelo
+	isdashing = false
 
 func statciate():
 	atk = round(base_atk * atkmod)
