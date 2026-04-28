@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://cxhvik4i3ylhl"]
+
+[ext_resource type="Script" uid="uid://c3gy1xfo4k4j5" path="res://tscns/dummy.gd" id="1_ycgv7"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_dgd6a"]
+radius = 20.0
+
+[node name="dummy" type="CharacterBody2D" unique_id=1803643371]
+script = ExtResource("1_ycgv7")
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=1020710798]
+polygon = PackedVector2Array(-14, -28, 0, 0, 15, -28, 11, 17, -11, 17)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=589403637]
+shape = SubResource("CircleShape2D_dgd6a")
+
+[node name="pivot" type="Node2D" parent="." unique_id=1714435447]
+
+[node name="Area2D" type="Area2D" parent="pivot" unique_id=871970190]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="pivot/Area2D" unique_id=848739312]
+rotation = -1.5707964
+polygon = PackedVector2Array(33, 1.4424758e-06, -33, -1.4424758e-06, -34.000004, 96, 32.999996, 96)

@@ -1,5 +1,7 @@
 extends CharacterBody2D
+
 var spd := 700
+var lastspd
 @export var curve :Curve
 var t = 0
 var last_dir = Vector2.ZERO
@@ -27,6 +29,7 @@ var stm =0
 var helm = null
 var chest = null
 
+var isgettingattacked = false
 var isdashing = false
 var isstancing = false
 
@@ -40,6 +43,9 @@ func _physics_process(delta: float) -> void:
 	if isdashing:
 		move_and_slide()
 		return
+	
+	if Input.is_action_just_pressed("f"):
+		parry_stance()
 	
 	if dir:
 		velocity = dir * spd * curve.sample(t)
@@ -69,10 +75,13 @@ func _physics_process(delta: float) -> void:
 func parry_stance():
 	isstancing = true
 	candraw = true
+	lastspd = spd
+	spd *= 0.2
 	get_tree().create_timer(2).timeout.connect(parry_over)
 
 func parry_over():
 	candraw = false
+	spd = lastspd
 	isstancing = false
 
 func get_atked(sequence, dmg, who):
@@ -82,6 +91,8 @@ func get_atked(sequence, dmg, who):
 		get_dmged(dmg, who)
 
 func dash():
+	if isgettingattacked:
+		return
 	isdashing = true
 	var lastvelo = velocity
 	velocity *= 2
@@ -147,6 +158,9 @@ func spawnhps(number : int):
 		await get_tree().create_timer(0.4).timeout
 
 func atk_sequence(points :Array, time : float, timestops: Array, who = self):
+	lastspd = spd
+	spd *= 0.2
+	isgettingattacked = true
 	last_atker = who
 	var line = Line2D.new()
 	var ttl = points.size()
@@ -188,6 +202,8 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self):
 							print('asd')
 							spawnhps((10 - int(t*10))-3)
 							line.queue_free()
+							isgettingattacked = false
+							spd = lastspd
 							return
 		
 		t += get_process_delta_time()/time
@@ -197,6 +213,8 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self):
 		await get_tree().process_frame
 	await get_tree().create_timer(0.5).timeout
 	get_dmged(who.atk, who)
+	isgettingattacked = false
+	spd = lastspd
 	line.queue_free()
 
 func player_line():
@@ -217,7 +235,8 @@ func player_line():
 	stm -= 1
 
 func cd_over():
-	candraw = true
+	if isstancing:
+		candraw = true
 
 func lineover():
 	plrend = get_viewport().get_mouse_position()
