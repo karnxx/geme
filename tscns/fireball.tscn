@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://byqsof2gvv26e"]
+
+[ext_resource type="Script" uid="uid://h88vogf1yefn" path="res://tscns/fireball.gd" id="1_bupqx"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_yjfnv"]
+radius = 2.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_bupqx"]
+radius = 4.0
+
+[node name="fireball" type="CharacterBody2D" unique_id=1224098493]
+scale = Vector2(3, 3)
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_bupqx")
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=658891380]
+color = Color(0.5411765, 0, 0, 1)
+polygon = PackedVector2Array(0, -3, 3, 0, 0, 3, -3, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2070402620]
+shape = SubResource("CircleShape2D_yjfnv")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=950117816]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1112761074]
+shape = SubResource("CircleShape2D_bupqx")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

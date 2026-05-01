@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://gcg7telxx26j"]
 
 [ext_resource type="Script" uid="uid://bnuyld48kr03j" path="res://plrr.gd" id="1_vjojb"]
-[ext_resource type="Script" uid="uid://wyn574virewk" path="res://tscns/hud.gd" id="2_t0vrg"]
 
 [sub_resource type="Curve" id="Curve_vjojb"]
 _data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.24499999, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
@@ -21,7 +20,6 @@ color = Color(0, 0, 1, 1)
 polygon = PackedVector2Array(0, -15, 11, 0, 0, 14, -10, 0)
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=2011039420]
-script = ExtResource("2_t0vrg")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1309727855]
 position_smoothing_enabled = true

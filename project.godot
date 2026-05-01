@@ -18,6 +18,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 InventoryManager="*uid://d1td4uameguyb"
+SignalManager="*uid://b2qyfkj82jfo7"
+TutorialManager="*uid://cpsqx0llinyjn"
 
 [editor_plugins]
 

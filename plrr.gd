@@ -17,14 +17,17 @@ var last_atker
 var base_atk = 10
 var base_hp = 100
 var base_stm = 10
+var base_def = 0
 
 var atkmod = 1
 var hpmod = 1
 var stmmod = 1
+var defmod = 1
 
-var atk =0 
-var hp =0
-var stm =0
+var atk = 0
+var hp = 0
+var stm = 0
+var def = 0
 
 var helm = null
 var chest = null
@@ -32,19 +35,26 @@ var chest = null
 var isgettingattacked = false
 var isdashing = false
 var isstancing = false
+var isspawninghps
+
+var atk_t = 0.0
+var plr_line_times = []
 
 func _ready() -> void:
 	InventoryManager.plrstantiate(self)
+	TutorialManager.plrstantiate(self)
 	statciate()
 
 func _physics_process(delta: float) -> void:
 	var dir = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down").normalized()
 	
+	
+	
 	if isdashing:
 		move_and_slide()
 		return
 	
-	if Input.is_action_just_pressed("f"):
+	if Input.is_action_just_pressed("f") and !isstancing:
 		parry_stance()
 	
 	if dir:
@@ -61,12 +71,11 @@ func _physics_process(delta: float) -> void:
 		last_dir = Vector2.ZERO
 	for i in circs:
 		if is_instance_valid(i) and is_instance_valid(current_line) and current_line.points.size() >= 1:
-					var tip = current_line.points[current_line.points.size()-1]
-					if tip.distance_to(i.position) < i.radius:
-						i.queue_free()
-						if is_instance_valid(last_atker):
-							last_atker.get_dmged(atk, last_atker)
-						#some dmging code
+			var tip = current_line.points[current_line.points.size()-1]
+			if tip.distance_to(i.position) < i.radius + 5:
+				i.queue_free()
+				if is_instance_valid(last_atker):
+					last_atker.get_dmged(atk)
 	if Input.is_action_just_pressed("ui_accept"):
 		dash()
 	move_and_slide()
@@ -85,8 +94,9 @@ func parry_over():
 	isstancing = false
 
 func get_atked(sequence, dmg, who):
-	if isstancing:
-		atk_sequence(sequence[0], sequence[1], sequence[2])
+	if !isstancing:
+		print('getatkedcalled')
+		return await atk_sequence(sequence[0], sequence[1], sequence[2], who)
 	else:
 		get_dmged(dmg, who)
 
@@ -104,16 +114,19 @@ func statciate():
 	atk = round(base_atk * atkmod)
 	stm = round(base_stm * stmmod)
 	hp = round(base_hp * hpmod)
+	def = round(base_def * defmod)
 
 func armorstantiate():
 	if helm != null:
-		atkmod = helm.atkmod
-		hpmod = helm.hpmod
-		stmmod = helm.stmmod
+		atkmod += helm.atkmod
+		hpmod += helm.hpmod
+		stmmod += helm.stmmod
+		defmod += helm.defmod
 	if chest != null:
-		atkmod = chest.atkmod
-		hpmod = chest.hpmod
-		stmmod = chest.stmmod
+		atkmod += chest.atkmod
+		hpmod += chest.hpmod
+		stmmod += chest.stmmod
+		defmod += helm.defmod
 	statciate()
 
 func flash(points):
@@ -134,6 +147,8 @@ func flash(points):
 
 var circs = []
 func spawnhps(number : int):
+	isspawninghps = true
+	candraw = true
 	var pos = Vector2(randf_range(0,get_viewport().get_visible_rect().size.x), randf_range(0,get_viewport().get_visible_rect().size.y))
 	if number == 0:
 		return
@@ -143,25 +158,26 @@ func spawnhps(number : int):
 		circ.position = pos
 		circs.append(circ)
 		circ.queue_redraw()
-		print(circ.position)
 		pos = Vector2(randf_range(0,get_viewport().get_visible_rect().size.x), randf_range(0,get_viewport().get_visible_rect().size.y))
 	var t = 0
 	while t < 1:
-		for i  in circs:
+		for i in circs:
 			if is_instance_valid(i):
-				i.radius -=4 
+				i.radius -= 4
 				if i.radius <= 10:
 					i.queue_free()
 				i.queue_redraw()
-			
 		t += 0.1
 		await get_tree().create_timer(0.4).timeout
+	isspawninghps = false
 
-func atk_sequence(points :Array, time : float, timestops: Array, who = self):
+func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> bool:
+	candraw = true
 	lastspd = spd
 	spd *= 0.2
 	isgettingattacked = true
 	last_atker = who
+	atk_t = 0.0
 	var line = Line2D.new()
 	var ttl = points.size()
 	var ponts : Array
@@ -173,20 +189,21 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self):
 	
 	var segments = ttl - 1
 	var progress = 0
-	var current_seg =0
-	var seg_prog =0
-	var start =0
-	var end =0
+	var current_seg = 0
+	var seg_prog = 0
+	var start = 0
+	var end = 0
 	var tip = 0
 	var prevtip = 0
-	
-	var prevseg =0
-	var curseg =0
+	var prevseg = 0
+	var curseg = 0
+
 	while t < 1:
+		atk_t = t
 		line.clear_points()
 		progress = t * segments
 		current_seg = int(progress)
-		seg_prog = progress-current_seg
+		seg_prog = progress - current_seg
 		start = points[current_seg]
 		end = points[current_seg + 1]
 		ponts.append(lerp(start, end, seg_prog))
@@ -197,35 +214,45 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self):
 			await get_tree().create_timer(timestops[prevseg]).timeout
 		if t > 0.3 and t < 1:
 			if is_instance_valid(current_line) and current_line.points.size() >= 2:
-						var closest = Geometry2D.get_closest_points_between_segments(prevtip, tip, current_line.points[current_line.points.size()-2], current_line.points[current_line.points.size()-1])
-						if closest[0].distance_to(closest[1]) < 40:
-							print('asd')
-							spawnhps((10 - int(t*10))-3)
+				for j in range(current_line.points.size() - 1):
+					if j < plr_line_times.size() and abs(plr_line_times[j] - t) < 0.15:
+						var intersect = Geometry2D.segment_intersects_segment(
+							prevtip, tip,
+							current_line.points[j], current_line.points[j+1]
+						)
+						if intersect != null:
+							if who.spawnhps:
+								spawnhps((10 - int(t*10))-3)
 							line.queue_free()
 							isgettingattacked = false
+							
 							spd = lastspd
-							return
-		
+							SignalManager.atk_seq_ovr.emit(true)
+							return true
 		t += get_process_delta_time()/time
 		prevtip = tip
 		curseg = current_seg
-
 		await get_tree().process_frame
 	await get_tree().create_timer(0.5).timeout
 	get_dmged(who.atk, who)
 	isgettingattacked = false
 	spd = lastspd
 	line.queue_free()
-
+	SignalManager.atk_seq_ovr.emit(false)
+	return false
+	
 func player_line():
 	if Input.is_action_just_pressed('lmb') and candraw:
 		plrstart = get_viewport().get_mouse_position()
 		current_line = Line2D.new()
+		plr_line_times = []
 		$hud.add_child(current_line)
 		current_line.add_point(plrstart)
+		plr_line_times.append(atk_t)
 		get_tree().create_timer(0.2).timeout.connect(lineover)
 	if Input.is_action_pressed("lmb") and candraw and plrstart != null:
 		current_line.add_point(get_viewport().get_mouse_position())
+		plr_line_times.append(atk_t)
 	if Input.is_action_just_released("lmb") and candraw and plrstart != null:
 		candraw = false
 		plrstart = null
@@ -235,18 +262,18 @@ func player_line():
 	stm -= 1
 
 func cd_over():
-	if isstancing:
+	if isgettingattacked or isspawninghps:
 		candraw = true
 
 func lineover():
 	plrend = get_viewport().get_mouse_position()
 	current_line.add_point(plrend)
+	plr_line_times.append(atk_t)
 	candraw = false
 	plrstart = null
 	plrend = null
-	
 	get_tree().create_timer(2).timeout.connect(current_line.queue_free)
 	get_tree().create_timer(0.2).timeout.connect(cd_over)
 
 func get_dmged(dmg, who):
-	hp -= dmg
+	hp -= round(dmg - (def * dmg)/2)
