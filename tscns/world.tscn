@@ -9,3 +9,11 @@
 
 [node name="dummy" parent="." unique_id=1803643371 instance=ExtResource("2_wpdp2")]
 position = Vector2(133, 10)
+
+[node name="tutorial" type="Label" parent="." unique_id=845638477]
+offset_left = 176.0
+offset_top = -55.0
+offset_right = 332.0
+offset_bottom = -13.0
+text = "TUTORIAL"
+autowrap_mode = 3

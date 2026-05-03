@@ -44,6 +44,9 @@ var plr_line_times = []
 var tip_history = []
 
 var viginette_str = 0.0
+
+var can_move = true
+
 func _ready() -> void:
 	InventoryManager.plrstantiate(self)
 	TutorialManager.plrstantiate(self)
@@ -52,7 +55,7 @@ func _ready() -> void:
 
 var dir
 func _physics_process(delta: float) -> void:
-	if !isdashing:
+	if !isdashing and can_move:
 		dir = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down").normalized()
 		animate(dir)
 	
@@ -82,7 +85,7 @@ func _physics_process(delta: float) -> void:
 				i.queue_free()
 				if is_instance_valid(last_atker):
 					last_atker.get_dmged(atk)
-	if Input.is_action_just_pressed("ui_accept"):
+	if Input.is_action_just_pressed("ui_accept") and can_move:
 		dash()
 	move_and_slide()
 	player_line()
@@ -282,6 +285,7 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 	var ttl = points.size()
 	var ponts : Array
 	var t = 0
+	$Camera2D.zazoom(1.3)
 	flash(points)
 	await get_tree().create_timer(1).timeout
 	line.name = "atk"
@@ -329,9 +333,9 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 								current_line.points[j], current_line.points[j+1]
 							)
 							if intersect != null:
+								$Camera2D.dzoom(1.8)
 								if who.spawnhps:
 									spawnhps((10 - int(t*10))-3)
-								$Camera2D.dzoom()
 								$Camera2D.apply_shake()
 								line.queue_free()
 								isgettingattacked = false
@@ -340,6 +344,7 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 								viginette_tween(1.0)
 								await get_tree().create_timer(0.1).timeout
 								viginette_tween(0)
+								$Camera2D.dzoom(1)
 								return true
 		
 		t += get_process_delta_time()/time
@@ -353,6 +358,7 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 	line.queue_free()
 	SignalManager.atk_seq_ovr.emit(false)
 	viginette_tween(0)
+	$Camera2D.zazoom(1)
 	return false
 
 func player_line():
@@ -364,6 +370,7 @@ func player_line():
 		current_line.add_point(plrstart)
 		plr_line_times.append(atk_t)
 		viginette_tween(0.7)
+		$Camera2D.zazoom(1.5)
 		get_tree().create_timer(0.8).timeout.connect(lineover)
 	if Input.is_action_pressed("lmb") and candraw and plrstart != null:
 		current_line.add_point(get_viewport().get_mouse_position())
@@ -394,6 +401,7 @@ func lineover():
 	plrstart = null
 	plrend = null
 	viginette_tween(0.3)
+	$Camera2D.zazoom(1.4)
 	get_tree().create_timer(3).timeout.connect(current_line.queue_free)
 	get_tree().create_timer(0.2).timeout.connect(cd_over)
 
