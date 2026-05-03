@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c4be4rdbdontl"]
+
+[ext_resource type="Script" uid="uid://o00trfair3qa" path="res://linemaker.gd" id="1_qgof3"]
+
+[node name="linemaker" type="Node2D" unique_id=828720946]
+script = ExtResource("1_qgof3")

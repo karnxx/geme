@@ -5,6 +5,8 @@ var start
 var spd = 700
 var dir
 
+var isatking = false
+
 func _ready() -> void:
 	await get_tree().process_frame
 	target = get_parent().get_node('plrr').global_position
@@ -16,13 +18,13 @@ func dissapear():
 	user.free_return(false)
 	queue_free()
 
-func world_to_screen(pos: Vector2) -> Vector2:
+func world_to_screen(pos) -> Vector2:
 	return get_viewport().get_canvas_transform() * pos
 
-func get_screen_edge_point(screen_start: Vector2, screen_dir: Vector2) -> Vector2:
+func get_screen_edge_point(screen_start, screeendir) -> Vector2:
 	var rect = get_viewport().get_visible_rect()
-	var far = screen_start + screen_dir * 10000
-	
+	var far = screen_start + screeendir * 10000
+
 	var edges = [
 		[Vector2(rect.position.x, rect.position.y), Vector2(rect.end.x, rect.position.y)],
 		[Vector2(rect.position.x, rect.end.y), Vector2(rect.end.x, rect.end.y)],
@@ -41,17 +43,20 @@ func _process(delta: float) -> void:
 	if user != null:
 		velocity = dir * spd
 		move_and_slide()
+		rotation = get_angle_to(target)
 
 func _on_area_2d_body_entered(body: Node2D) -> void:
-	if body.name == 'plrr':
+	if body.name == 'plrr' and !isatking:
+		isatking = true
 		var screen_start = world_to_screen(start)
-		var screen_dir = (world_to_screen(global_position) - screen_start).normalized()
-		var p1 = get_screen_edge_point(screen_start, screen_dir)
-		var p2 = get_screen_edge_point(screen_start, -screen_dir)
-		var points = [p1, p2]
-		var time = 0.6
+		var screeendir = (world_to_screen(global_position) - screen_start).normalized()
+		var p1 = get_screen_edge_point(screen_start, screeendir)
+		var p2 = get_screen_edge_point(screen_start, -screeendir)
+		var points = [p2, p1]
+		var time = 0.8
 		var timestops = [0.1]
 		var arara = [points, time, timestops]
+		
 		body.get_atked(arara, user.atk, user)
 		user.free_return(true)
 		queue_free()

@@ -40,16 +40,26 @@ func _process(delta: float) -> void:
 		if result == true:
 			print('detects the hps done')
 			t4over = true
+			dummy.can_atk = false
+			dummy.spawnhps = false
 	if t4over and not t5over and not is_waiting:
-		print('firba')
 		is_waiting = true
 		dummy.can_spawn_proj = true
 		dummy.projectile(1)
-		var thingey = dummy.last_return
-		while thingey == dummy.last_return:
-			await get_tree().process_frame
+		var result = await dummy.returned
 		await get_tree().create_timer(0.5).timeout
 		is_waiting = false
+		if result == true:
+			t5over = true
+			dummy.atk = 10
+			dummy.hp = 100
+			await get_tree().create_timer(5).timeout
+			dummy.tutoaver = true
+			tutover = true
+			dummy.can_atk = true
+			dummy.can_spawn_proj = true
+	if Input.is_action_just_pressed('test'):
+		dummy.projectile(1)
 
 	if tutover == true:
 		self.queue_free()

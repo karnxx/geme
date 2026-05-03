@@ -1,5 +1,6 @@
 extends CharacterBody2D
 
+var basespd = 700
 var spd := 700
 var lastspd
 @export var curve :Curve
@@ -11,6 +12,7 @@ var plrstart
 var plrend
 
 var current_line : Line2D
+
 
 var last_atker
 
@@ -39,16 +41,20 @@ var isspawninghps
 
 var atk_t = 0.0
 var plr_line_times = []
+var tip_history = []
 
+var viginette_str = 0.0
 func _ready() -> void:
 	InventoryManager.plrstantiate(self)
 	TutorialManager.plrstantiate(self)
 	statciate()
+	viginette_set(0.0)
 
+var dir
 func _physics_process(delta: float) -> void:
-	var dir = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down").normalized()
-	
-	
+	if !isdashing:
+		dir = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down").normalized()
+		animate(dir)
 	
 	if isdashing:
 		move_and_slide()
@@ -81,21 +87,54 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	player_line()
 
+func viginette_set(strength):
+	viginette_str = strength
+	$hud/ColorRect.material.set_shader_parameter("strength", strength)
+
+func viginette_tween(tar, dur=0.3):
+	var tween = create_tween()
+	tween.tween_method(viginette_set, viginette_str, tar, dur)
+
 func parry_stance():
 	isstancing = true
 	candraw = true
 	lastspd = spd
 	spd *= 0.2
+	viginette_tween(0.3)
 	get_tree().create_timer(2).timeout.connect(parry_over)
+
+func animate(dir):
+	if dir == Vector2.ZERO:
+		$AnimatedSprite2D.pause()
+		return
+	if dir.x > 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("dr")
+		elif dir.y < 0 :
+			$AnimatedSprite2D.play("ur")
+		elif dir.y == 0:
+			$AnimatedSprite2D.play("r")
+	elif dir.x < 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("dl")
+		elif dir.y < 0 :
+			$AnimatedSprite2D.play("ul")
+		elif dir.y == 0:
+			$AnimatedSprite2D.play("l")
+	elif dir.x == 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("d")
+		elif dir.y < 0:
+			$AnimatedSprite2D.play("u")
 
 func parry_over():
 	candraw = false
-	spd = lastspd
+	spd = basespd
 	isstancing = false
+	viginette_tween(0)
 
 func get_atked(sequence, dmg, who):
 	if !isstancing:
-		print('getatkedcalled')
 		return await atk_sequence(sequence[0], sequence[1], sequence[2], who)
 	else:
 		get_dmged(dmg, who)
@@ -103,12 +142,72 @@ func get_atked(sequence, dmg, who):
 func dash():
 	if isgettingattacked:
 		return
+	
 	isdashing = true
 	var lastvelo = velocity
 	velocity *= 2
-	await get_tree().create_timer(0.2).timeout
+	await dashanimate()
 	velocity = lastvelo
 	isdashing = false
+
+func dashanimate():
+	if dir == Vector2.ZERO:
+		if last_dir.x > 0:
+			if last_dir.y > 0:
+				$AnimatedSprite2D.play("d_dr")
+				await $AnimatedSprite2D.animation_finished
+			elif last_dir.y < 0 :
+				$AnimatedSprite2D.play("d_ur")
+				await $AnimatedSprite2D.animation_finished
+			elif last_dir.y == 0:
+				$AnimatedSprite2D.play("d_r")
+				await $AnimatedSprite2D.animation_finished
+		elif last_dir.x < 0:
+			if last_dir.y > 0:
+				$AnimatedSprite2D.play("d_dl")
+				await $AnimatedSprite2D.animation_finished
+			elif last_dir.y < 0 :
+				$AnimatedSprite2D.play("d_ul")
+				await $AnimatedSprite2D.animation_finished
+			elif last_dir.y == 0:
+				$AnimatedSprite2D.play("d_l")
+				await $AnimatedSprite2D.animation_finished
+		return
+	elif dir.x == 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("d_d")
+			await $AnimatedSprite2D.animation_finished
+		elif dir.y < 0:
+			$AnimatedSprite2D.play("d_u")
+			await $AnimatedSprite2D.animation_finished
+	if dir.x > 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("d_dr")
+			await $AnimatedSprite2D.animation_finished
+		elif dir.y < 0 :
+			$AnimatedSprite2D.play("d_ur")
+			await $AnimatedSprite2D.animation_finished
+		elif dir.y == 0:
+			$AnimatedSprite2D.play("d_r")
+			await $AnimatedSprite2D.animation_finished
+	elif dir.x < 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("d_dl")
+			await $AnimatedSprite2D.animation_finished
+		elif dir.y < 0 :
+			$AnimatedSprite2D.play("d_ul")
+			await $AnimatedSprite2D.animation_finished
+		elif dir.y == 0:
+			$AnimatedSprite2D.play("d_l")
+			await $AnimatedSprite2D.animation_finished
+	elif dir.x == 0:
+		if dir.y > 0:
+			$AnimatedSprite2D.play("d_d")
+			await $AnimatedSprite2D.animation_finished
+		elif dir.y < 0:
+			$AnimatedSprite2D.play("d_u")
+			await $AnimatedSprite2D.animation_finished
+	return
 
 func statciate():
 	atk = round(base_atk * atkmod)
@@ -178,6 +277,7 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 	isgettingattacked = true
 	last_atker = who
 	atk_t = 0.0
+	tip_history = []
 	var line = Line2D.new()
 	var ttl = points.size()
 	var ponts : Array
@@ -186,15 +286,15 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 	await get_tree().create_timer(1).timeout
 	line.name = "atk"
 	$hud.add_child(line)
-	
+	viginette_tween(0.3)
+
 	var segments = ttl - 1
 	var progress = 0
 	var current_seg = 0
 	var seg_prog = 0
 	var start = 0
 	var end = 0
-	var tip = 0
-	var prevtip = 0
+	var tip = Vector2.ZERO
 	var prevseg = 0
 	var curseg = 0
 
@@ -209,38 +309,52 @@ func atk_sequence(points :Array, time : float, timestops: Array, who = self) -> 
 		ponts.append(lerp(start, end, seg_prog))
 		tip = lerp(start, end, seg_prog)
 		line.points = ponts
+		
+		tip_history.append(tip)
+		if tip_history.size() > 8:
+			tip_history.pop_front()
+		
 		if curseg != current_seg:
 			prevseg = curseg
-			await get_tree().create_timer(timestops[prevseg]).timeout
+			if prevseg < timestops.size():
+				await get_tree().create_timer(timestops[prevseg]).timeout
+		
 		if t > 0.3 and t < 1:
 			if is_instance_valid(current_line) and current_line.points.size() >= 2:
 				for j in range(current_line.points.size() - 1):
-					if j < plr_line_times.size() and abs(plr_line_times[j] - t) < 0.15:
-						var intersect = Geometry2D.segment_intersects_segment(
-							prevtip, tip,
-							current_line.points[j], current_line.points[j+1]
-						)
-						if intersect != null:
-							if who.spawnhps:
-								spawnhps((10 - int(t*10))-3)
-							line.queue_free()
-							isgettingattacked = false
-							
-							spd = lastspd
-							SignalManager.atk_seq_ovr.emit(true)
-							return true
+					if j < plr_line_times.size() and abs(plr_line_times[j] - atk_t) < 0.15:
+						for k in range(tip_history.size() - 1):
+							var intersect = Geometry2D.segment_intersects_segment(
+								tip_history[k], tip_history[k+1],
+								current_line.points[j], current_line.points[j+1]
+							)
+							if intersect != null:
+								if who.spawnhps:
+									spawnhps((10 - int(t*10))-3)
+								$Camera2D.dzoom()
+								$Camera2D.apply_shake()
+								line.queue_free()
+								isgettingattacked = false
+								spd = basespd
+								SignalManager.atk_seq_ovr.emit(true)
+								viginette_tween(1.0)
+								await get_tree().create_timer(0.1).timeout
+								viginette_tween(0)
+								return true
+		
 		t += get_process_delta_time()/time
-		prevtip = tip
 		curseg = current_seg
 		await get_tree().process_frame
+
 	await get_tree().create_timer(0.5).timeout
 	get_dmged(who.atk, who)
 	isgettingattacked = false
-	spd = lastspd
+	spd = basespd
 	line.queue_free()
 	SignalManager.atk_seq_ovr.emit(false)
+	viginette_tween(0)
 	return false
-	
+
 func player_line():
 	if Input.is_action_just_pressed('lmb') and candraw:
 		plrstart = get_viewport().get_mouse_position()
@@ -249,15 +363,20 @@ func player_line():
 		$hud.add_child(current_line)
 		current_line.add_point(plrstart)
 		plr_line_times.append(atk_t)
-		get_tree().create_timer(0.2).timeout.connect(lineover)
+		viginette_tween(0.7)
+		get_tree().create_timer(0.8).timeout.connect(lineover)
 	if Input.is_action_pressed("lmb") and candraw and plrstart != null:
 		current_line.add_point(get_viewport().get_mouse_position())
 		plr_line_times.append(atk_t)
+		if current_line.get_point_count() > 20:
+			current_line.remove_point(0)
+			plr_line_times.pop_front()
 	if Input.is_action_just_released("lmb") and candraw and plrstart != null:
 		candraw = false
 		plrstart = null
 		plrend = null
-		get_tree().create_timer(2).timeout.connect(current_line.queue_free)
+		viginette_tween(0.3)
+		get_tree().create_timer(3).timeout.connect(current_line.queue_free)
 		get_tree().create_timer(0.2).timeout.connect(cd_over)
 	stm -= 1
 
@@ -266,13 +385,16 @@ func cd_over():
 		candraw = true
 
 func lineover():
+	if plrstart == null:
+		return
 	plrend = get_viewport().get_mouse_position()
 	current_line.add_point(plrend)
 	plr_line_times.append(atk_t)
 	candraw = false
 	plrstart = null
 	plrend = null
-	get_tree().create_timer(2).timeout.connect(current_line.queue_free)
+	viginette_tween(0.3)
+	get_tree().create_timer(3).timeout.connect(current_line.queue_free)
 	get_tree().create_timer(0.2).timeout.connect(cd_over)
 
 func get_dmged(dmg, who):
