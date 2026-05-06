@@ -26,6 +26,15 @@ point_count = 3
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_t0vrg"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bayxt"]
+bg_color = Color(1, 1, 1, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uuc7w"]
+bg_color = Color(0.54509807, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5p3vh"]
+bg_color = Color(0.6, 1, 0.6, 1)
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_m5644"]
 shader = ExtResource("2_1g1t7")
 shader_parameter/strength = 0.0
@@ -570,6 +579,35 @@ shape = SubResource("CircleShape2D_t0vrg")
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=2011039420]
 
+[node name="stm" type="ProgressBar" parent="hud" unique_id=743457251]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -4.0
+offset_right = -576.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/background = SubResource("StyleBoxFlat_bayxt")
+theme_override_styles/fill = SubResource("StyleBoxFlat_uuc7w")
+value = 50.0
+show_percentage = false
+
+[node name="hp" type="ProgressBar" parent="hud" unique_id=2111495080]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 576.0
+offset_top = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/background = SubResource("StyleBoxFlat_bayxt")
+theme_override_styles/fill = SubResource("StyleBoxFlat_5p3vh")
+value = 50.0
+fill_mode = 1
+show_percentage = false
+
 [node name="ColorRect" type="ColorRect" parent="hud" unique_id=396530571]
 material = SubResource("ShaderMaterial_m5644")
 anchors_preset = 15
@@ -586,4 +624,4 @@ script = ExtResource("2_t0vrg")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1970475635]
 scale = Vector2(3.1875, 2.8790321)
 sprite_frames = SubResource("SpriteFrames_qlord")
-animation = &"d_l"
+animation = &"d"

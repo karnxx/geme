@@ -7,14 +7,18 @@ var dir
 
 var isatking = false
 
+var is_plring = false
+
 func _ready() -> void:
 	await get_tree().process_frame
 	target = get_parent().get_node('plrr').global_position
 	start = global_position
-	get_tree().create_timer(2).timeout.connect(dissapear)
+	get_tree().create_timer(4).timeout.connect(dissapear)
 	dir = (target - global_position).normalized()
 
 func dissapear():
+	if is_plring:
+		return
 	user.free_return(false)
 	queue_free()
 
@@ -47,6 +51,7 @@ func _process(delta: float) -> void:
 
 func _on_area_2d_body_entered(body: Node2D) -> void:
 	if body.name == 'plrr' and !isatking:
+		is_plring = true
 		isatking = true
 		var screen_start = world_to_screen(start)
 		var screeendir = (world_to_screen(global_position) - screen_start).normalized()
@@ -57,6 +62,8 @@ func _on_area_2d_body_entered(body: Node2D) -> void:
 		var timestops = [0.1]
 		var arara = [points, time, timestops]
 		
-		body.get_atked(arara, user.atk, user)
-		user.free_return(true)
+		var res = await body.get_atked(arara, user.atk, user, "proj")
+		print(res)
+		user.free_return(res)
+
 		queue_free()

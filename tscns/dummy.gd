@@ -25,11 +25,16 @@ var spawnhps = false
 var last_return = false
 var can_spawn_proj = false
 var is_acting = false
-signal returned
 
+var canfballorsweep = false
+var cantap = false
+
+signal returned
 func _ready() -> void:
 	if is_instance_valid(TutorialManager):
 		TutorialManager.dummystantiate(self)
+
+var action_cooldown = 0.0
 
 func _process(delta: float) -> void:
 	plr = get_parent().get_node('plrr')
@@ -37,15 +42,27 @@ func _process(delta: float) -> void:
 		$pivot.rotation = global_position.angle_to_point(plr.global_position)
 	if is_acting or !tutoaver:
 		return
-	if not is_acting and tutoaver:
-		if is_plr_in_atkreach and is_plr_in_range and plr:
-			try_atk()
-		else:
-			var radi = randi_range(0, 1)
-			if radi == 0:
-				fireballround()
-			else:
-				randomtp()
+	if tutoaver:
+		fballorsweep()
+		randomada()
+
+func fballorsweep():
+	if !canfballorsweep:
+		return
+	var rand = randi_range(0,1)
+	if rand == 1:
+		fireballround()
+	else:
+		sweep()
+	await get_tree().create_timer(2).timeout
+	canfballorsweep = true
+
+func randomada():
+	if !cantap:
+		return
+	randomtp()
+	await get_tree().create_timer(0.5).timeout
+	cantap = true
 
 func fireballround():
 	is_acting = true
@@ -58,18 +75,47 @@ func get_dmged(dmg):
 
 func try_atk():
 	is_acting = true
-	spawnhps = true
+	if is_instance_valid(TutorialManager) and TutorialManager.t3over:
+		spawnhps = true
 	var randa = randi() % pointas.size()
 	var randpoint = pointas[randa]
 	var randtpoint = tpointas[randa]
 	var time = timas[randa]
 	var seqarray = [randpoint, time, randtpoint]
 	var dmg = atk
-	var ret = await plr.get_atked(seqarray, dmg, self)
+	var ret = await plr.get_atked(seqarray, dmg, self, "melee")
 	spawnhps = false
 	await get_tree().create_timer(2).timeout
 	is_acting = false
 	return ret
+
+func sweep():
+	var pos = (plr.global_position - global_position)
+	if pos.x > 0 and pos.y > 0:
+		$atk.play("dr")
+		$dr.monitoring = true
+		await $atk.animation_finished
+		$dr.monitoring = false
+	elif pos.x < 0 and pos.y > 0:
+		$atk.play("dl")
+		$dl.monitoring = true
+		await $atk.animation_finished
+		$dl.monitoring = false
+	elif pos.x < 0 and pos.y < 0:
+		$atk.play("ul")
+		$ul.monitoring = true
+		await $atk.animation_finished
+		$ul.monitoring = false
+	elif pos.x > 0 and pos.y < 0:
+		$atk.play("ur")
+		$ur.monitoring = true
+		await $atk.animation_finished
+		$ur.monitoring = false
+
+func sweep_col(body):
+	if body.name == 'plrr':
+		try_atk()
+		pass
 
 func _on_area_2d_body_entered(body: Node2D) -> void:
 	if body.name == 'plrr':
