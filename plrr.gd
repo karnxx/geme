@@ -45,6 +45,11 @@ var tip_history = []
 var viginette_str = 0.0
 var can_move = true
 
+var atk_anim_playing = false
+
+var isdrawing = false
+
+var dasha = true
 func _ready() -> void:
 	InventoryManager.plrstantiate(self)
 	TutorialManager.plrstantiate(self)
@@ -52,6 +57,8 @@ func _ready() -> void:
 	viginette_set(0.0)
 
 func _process(delta: float) -> void:
+	restore_stm()
+	atkanimate()
 	updhps()
 
 func updhps():
@@ -90,6 +97,7 @@ func _physics_process(delta: float) -> void:
 			var tip = current_line.points[current_line.points.size()-1]
 			if tip.distance_to(i.position) < i.radius + 5:
 				i.queue_free()
+				$Camera2D.apply_shake()
 				if is_instance_valid(last_atker):
 					last_atker.get_dmged(atk)
 	if Input.is_action_just_pressed("ui_accept") and can_move:
@@ -116,6 +124,8 @@ func do_zoom(amt, dur=0.2):
 	current_zoom_tween.tween_property($Camera2D, "zoom", Vector2(amt, amt), dur)
 
 func parry_stance():
+	var twen = create_tween()
+	twen.tween_property(self, "modulate", Color(2,2,2,1), 0.3)
 	isstancing = true
 	candraw = true
 	lastspd = spd
@@ -123,7 +133,26 @@ func parry_stance():
 	viginette_tween(0.3)
 	get_tree().create_timer(2).timeout.connect(parry_over)
 
+func atkanimate():
+	if !isgettingattacked or atk_anim_playing:
+		return
+	atk_anim_playing = true
+	var dirara = last_atker.global_position - global_position
+	if (dirara.x > 0 and dirara.y < 0) or (dirara.x > 0 and dirara.y == 0):
+		$AnimatedSprite2D.play("pi_u")
+	elif (dirara.x < 0 and dirara.y < 0) or (dirara.x == 0 and dirara.y < 0):
+		$AnimatedSprite2D.play("pi_l")
+	elif (dirara.x < 0 and dirara.y > 0) or (dirara.x < 0 and dirara.y == 0):
+		$AnimatedSprite2D.play("pi_d")
+	elif (dirara.x > 0 and dirara.y > 0) or (dirara.x == 0 and dirara.y > 0):
+		$AnimatedSprite2D.play("pi_r")
+	while isgettingattacked:
+		await get_tree().process_frame
+	atk_anim_playing = false
+
 func animate(dir):
+	if isgettingattacked:
+		return
 	if dir == Vector2.ZERO:
 		$AnimatedSprite2D.pause()
 		return
@@ -152,8 +181,11 @@ func parry_over():
 	spd = basespd
 	isstancing = false
 	viginette_tween(0)
+	var twen = create_tween()
+	twen.tween_property(self, "modulate", Color(1,1,1,1), 0.3)
 
 func get_atked(sequence, dmg, who, type='melee'):
+	last_atker = who
 	if type == "melee":
 		return await atk_sequence(sequence[0], sequence[1], sequence[2], who)
 	else:
@@ -161,21 +193,24 @@ func get_atked(sequence, dmg, who, type='melee'):
 			get_dmged(dmg, who)
 			return false
 		else:
-			print('asd')
 			return await atk_sequence(sequence[0], sequence[1], sequence[2], who)
 
 func dash():
-	if isgettingattacked:
+	if isgettingattacked or isdashing or !dasha:
 		return
+	if stm == 0:
+		return
+	dasha = false
 	if is_instance_valid(TutorialManager):
 		if TutorialManager.tutover:
 			stm -= 1
 	isdashing = true
-	var lastvelo = velocity
 	velocity *= 2
 	await dashanimate()
-	velocity = lastvelo
+	velocity = Vector2.ZERO
 	isdashing = false
+	await get_tree().create_timer(0.3).timeout
+	dasha = true
 
 func dashanimate():
 	var d = dir if dir != Vector2.ZERO else last_dir
@@ -239,6 +274,7 @@ var circs = []
 func spawnhps(number : int):
 	isspawninghps = true
 	candraw = true
+	isdrawing = true
 	var pos = Vector2(randf_range(0, get_viewport().get_visible_rect().size.x), randf_range(0, get_viewport().get_visible_rect().size.y))
 	if number == 0:
 		return
@@ -260,6 +296,7 @@ func spawnhps(number : int):
 		t += 0.1
 		await get_tree().create_timer(0.4).timeout
 	isspawninghps = false
+	isdrawing = false
 
 func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> bool:
 	candraw = true
@@ -269,6 +306,7 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 	last_atker = who
 	atk_t = 0.0
 	tip_history = []
+	isdrawing = true
 	var line = Line2D.new()
 	var ponts: Array
 	var t = 0
@@ -321,6 +359,8 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 							if intersect != null:
 								if who.spawnhps:
 									spawnhps((10 - int(t*10)) - 3)
+								else:
+									isdrawing = false
 								$Camera2D.apply_shake()
 								line.queue_free()
 								isgettingattacked = false
@@ -328,6 +368,8 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 								SignalManager.atk_seq_ovr.emit(true)
 								viginette_tween(1.0, 0.05)
 								do_zoom(1.8)
+								hp += round(hpmod + 1)
+								stm += round(stmmod + 3)
 								await get_tree().create_timer(0.15).timeout
 								viginette_tween(0.0)
 								do_zoom(1.0)
@@ -345,6 +387,7 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 	SignalManager.atk_seq_ovr.emit(false)
 	viginette_tween(0.0)
 	do_zoom(1.0)
+	isdrawing = false
 	return false
 
 func player_line():
@@ -357,15 +400,16 @@ func player_line():
 		plr_line_times.append(atk_t)
 		viginette_tween(0.7)
 		do_zoom(1.5)
-		stm -= 0.1
-		get_tree().create_timer(0.8).timeout.connect(lineover)
+		stm -= 1
 	if Input.is_action_pressed("lmb") and candraw and plrstart != null:
 		current_line.add_point(get_viewport().get_mouse_position())
 		plr_line_times.append(atk_t)
 		if current_line.get_point_count() > 20:
 			current_line.remove_point(0)
 			plr_line_times.pop_front()
-		
+		stm -= get_process_delta_time() * 3
+		if stm <= 0:
+			lineover()
 	if Input.is_action_just_released("lmb") and candraw and plrstart != null:
 		candraw = false
 		plrstart = null
@@ -392,6 +436,15 @@ func lineover():
 	do_zoom(1.0)
 	get_tree().create_timer(3).timeout.connect(current_line.queue_free)
 	get_tree().create_timer(0.2).timeout.connect(cd_over)
+
+func restore_stm():
+	if !isgettingattacked or !isdashing or !isdrawing:
+		await get_tree().create_timer(0.5).timeout
+		while !isgettingattacked or !isdashing or !isdrawing:
+			stm += 0.2
+			if stm > stmmod * base_stm:
+				stm = stmmod * base_stm
+			await get_tree().process_frame
 
 func get_dmged(dmg, who):
 	hp -= round(dmg - (def * dmg) / 2)

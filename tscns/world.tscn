@@ -6,6 +6,7 @@
 [node name="world" type="Node2D" unique_id=1531642626]
 
 [node name="plrr" parent="." unique_id=1867672344 instance=ExtResource("1_smp2l")]
+position = Vector2(142, 209)
 
 [node name="dummy" parent="." unique_id=1803643371 instance=ExtResource("2_wpdp2")]
 position = Vector2(133, 10)

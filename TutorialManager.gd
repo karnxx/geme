@@ -145,7 +145,19 @@ func _process(delta: float) -> void:
 			await get_tree().create_timer(1).timeout
 			busy = false
 	if Input.is_action_just_pressed('test'):
-		dummy.projectile(1)
-
+		plr.can_move = true
+		dummy.canfballorsweep = true
+		dummy.cantap = true
+		dummy.tutoaver = true
+		dummy.atk = 10
+		dummy.hp = 100
+		dummy.can_atk = true
+		dummy.can_spawn_proj = true
+		tutover = true
+		t1over = true
+		t2over = true
+		t3over = true
+		t4over = true
+		t5over = true
 	if tutover == true:
-		self.queue_free()
+		set_process(false)

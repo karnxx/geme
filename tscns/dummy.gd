@@ -37,6 +37,7 @@ func _ready() -> void:
 var action_cooldown = 0.0
 
 func _process(delta: float) -> void:
+	
 	plr = get_parent().get_node('plrr')
 	if can_move_box and plr:
 		$pivot.rotation = global_position.angle_to_point(plr.global_position)
@@ -45,28 +46,41 @@ func _process(delta: float) -> void:
 	if tutoaver:
 		fballorsweep()
 		randomada()
+		tpoints = [0.2,0.3]
+		tim = 0.5
+		tpoints1 = [0.3, 0.2, 0.4]
+		tim1 = 0.5
+		tpoints2 = [0.1, 0.3]
+		tim2 = 0.5
+
+func animate():
+	if !is_acting:
+		$AnimatedSprite2D.play("idle")
+
 
 func fballorsweep():
 	if !canfballorsweep:
 		return
+	canfballorsweep = false
 	var rand = randi_range(0,1)
 	if rand == 1:
 		fireballround()
 	else:
 		sweep()
-	await get_tree().create_timer(2).timeout
+	await get_tree().create_timer(4).timeout
 	canfballorsweep = true
 
 func randomada():
 	if !cantap:
 		return
 	randomtp()
-	await get_tree().create_timer(0.5).timeout
+	await get_tree().create_timer(1).timeout
 	cantap = true
 
 func fireballround():
 	is_acting = true
-	projectile(10, 0.4)
+	$AnimatedSprite2D.play("fireball")
+	projectile(10, 0.2)
 	await get_tree().create_timer(4).timeout
 	is_acting = false
 
@@ -93,24 +107,34 @@ func sweep():
 	var pos = (plr.global_position - global_position)
 	if pos.x > 0 and pos.y > 0:
 		$atk.play("dr")
+		$AnimatedSprite2D.play("atk")
 		$dr.monitoring = true
 		await $atk.animation_finished
 		$dr.monitoring = false
 	elif pos.x < 0 and pos.y > 0:
 		$atk.play("dl")
+		$AnimatedSprite2D.play("atk")
 		$dl.monitoring = true
 		await $atk.animation_finished
 		$dl.monitoring = false
 	elif pos.x < 0 and pos.y < 0:
 		$atk.play("ul")
+		$AnimatedSprite2D.play("atk")
 		$ul.monitoring = true
 		await $atk.animation_finished
 		$ul.monitoring = false
 	elif pos.x > 0 and pos.y < 0:
 		$atk.play("ur")
+		$AnimatedSprite2D.play("atk")
 		$ur.monitoring = true
 		await $atk.animation_finished
 		$ur.monitoring = false
+
+func atkanimate(pos):
+	if pos.x > 0:
+		$AnimatedSprite2D.flip_h = false
+	else:
+		$AnimatedSprite2D.flip_h = true
 
 func sweep_col(body):
 	if body.name == 'plrr':
