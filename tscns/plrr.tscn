@@ -944,6 +944,26 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="Control" type="Control" parent="hud" unique_id=1232951255]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ColorRect2" type="ColorRect" parent="hud/Control" unique_id=1373693534]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 100.0
+color = Color(0, 0, 0, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="hud/Control" unique_id=1930852091]
+layout_mode = 0
+offset_top = 548.0
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0, 0, 0, 1)
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1309727855]
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true

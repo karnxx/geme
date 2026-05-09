@@ -15,6 +15,18 @@ func _process(delta: float) -> void:
 func apply_shake():
 	shakestr = randstrength
 
+func gopos(gpos):
+	var twen = create_tween()
+	twen.tween_property(self, 'global_position', gpos, 1)
+	await twen.finished
+	return
+
+func activate_cutscene(val):
+	var activata = get_parent().get_node('hud/Control')
+	var tween = create_tween()
+	tween.tween_property(activata, 'modulate:a', val, 0.5)
+	
+
 func dzoom(amt):
 	var tween = create_tween()
 	tween.tween_property(self, "zoom", Vector2(amt, amt), 0.1)

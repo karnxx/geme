@@ -46,12 +46,15 @@ func _process(delta: float) -> void:
 	if tutoaver:
 		fballorsweep()
 		randomada()
-		tpoints = [0.2,0.3]
-		tim = 0.5
-		tpoints1 = [0.3, 0.2, 0.4]
-		tim1 = 0.5
-		tpoints2 = [0.1, 0.3]
-		tim2 = 0.5
+		tpoints = [0.1,0.5]
+		tim = 0.9
+		tpoints1 = [0.1, 0, 0.1]
+		tim1 = 0.7
+		tpoints2 = [0.06, 0.06]
+		tim2 = 0.8
+		pointas = [points, points1, points2]
+		tpointas = [tpoints, tpoints1, tpoints2]
+		timas = [tim, tim1, tim2]
 
 func animate():
 	if !is_acting:

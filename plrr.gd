@@ -332,7 +332,6 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 	$hud.add_child(line)
 	viginette_tween(0.3)
 	line.default_color = Color(0.467, 0.369, 0.369, 1.0)
-
 	var segments = points.size() - 1
 	var current_seg = 0
 	var seg_prog = 0.0
@@ -341,7 +340,6 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 	var tip = Vector2.ZERO
 	var prevseg = 0
 	var curseg = 0
-
 	while t < 1:
 		atk_t = t
 		line.clear_points()
@@ -353,16 +351,13 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 		ponts.append(lerp(start, end, seg_prog))
 		tip = lerp(start, end, seg_prog)
 		line.points = ponts
-
 		tip_history.append(tip)
 		if tip_history.size() > 8:
 			tip_history.pop_front()
-
 		if curseg != current_seg:
 			prevseg = curseg
 			if prevseg < timestops.size():
 				await get_tree().create_timer(timestops[prevseg]).timeout
-
 		if t > 0.3 and t < 1:
 			if is_instance_valid(current_line) and current_line.points.size() >= 2:
 				for j in range(current_line.points.size() - 1):
@@ -377,6 +372,7 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 									spawnhps((10 - int(t*10)) - 3)
 								else:
 									isdrawing = false
+								hp += 0.2
 								$Camera2D.apply_shake()
 								line.queue_free()
 								isgettingattacked = false
@@ -390,11 +386,9 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 								viginette_tween(0.0)
 								do_zoom(1.0)
 								return true
-
 		t += get_process_delta_time() / time
 		curseg = current_seg
 		await get_tree().process_frame
-
 	await get_tree().create_timer(0.5).timeout
 	get_dmged(who.atk, who)
 	isgettingattacked = false
