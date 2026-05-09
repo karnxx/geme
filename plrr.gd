@@ -46,10 +46,10 @@ var viginette_str = 0.0
 var can_move = true
 
 var atk_anim_playing = false
-
 var isdrawing = false
-
+var isregening = false
 var dasha = true
+
 func _ready() -> void:
 	InventoryManager.plrstantiate(self)
 	TutorialManager.plrstantiate(self)
@@ -87,7 +87,7 @@ func _physics_process(delta: float) -> void:
 		if t > 1:
 			t = 1
 	else:
-		velocity = last_dir * spd * curve.sample(t)
+		velocity = velocity.move_toward(Vector2.ZERO, spd * delta * 5)
 		t -= delta
 		if t < 0:
 			t = 0
@@ -100,6 +100,7 @@ func _physics_process(delta: float) -> void:
 				$Camera2D.apply_shake()
 				if is_instance_valid(last_atker):
 					last_atker.get_dmged(atk)
+	
 	if Input.is_action_just_pressed("ui_accept") and can_move:
 		dash()
 	move_and_slide()
@@ -129,12 +130,12 @@ func parry_stance():
 	isstancing = true
 	candraw = true
 	lastspd = spd
-	spd *= 0.2
+	spd = basespd * 0.2
 	viginette_tween(0.3)
 	get_tree().create_timer(2).timeout.connect(parry_over)
 
 func atkanimate():
-	if !isgettingattacked or atk_anim_playing:
+	if !isgettingattacked or atk_anim_playing or isdashing:
 		return
 	atk_anim_playing = true
 	var dirara = last_atker.global_position - global_position
@@ -151,9 +152,9 @@ func atkanimate():
 	atk_anim_playing = false
 
 func animate(dir):
-	if isgettingattacked:
+	if isgettingattacked or isdashing:
 		return
-	if dir == Vector2.ZERO:
+	if dir == Vector2.ZERO and !isdashing:
 		$AnimatedSprite2D.pause()
 		return
 	if dir.x > 0:
@@ -198,22 +199,31 @@ func get_atked(sequence, dmg, who, type='melee'):
 func dash():
 	if isgettingattacked or isdashing or !dasha:
 		return
-	if stm == 0:
+	if dir == Vector2.ZERO or velocity == Vector2.ZERO:
+		return
+	if stm <= 0:
 		return
 	dasha = false
 	if is_instance_valid(TutorialManager):
 		if TutorialManager.tutover:
 			stm -= 1
 	isdashing = true
-	velocity *= 2
+	var d = dir if dir != Vector2.ZERO else last_dir
+	velocity = d * basespd * 1.2
 	await dashanimate()
-	velocity = Vector2.ZERO
 	isdashing = false
+	last_dir = d
+	t = 0.5
+	velocity = Vector2.ZERO
 	await get_tree().create_timer(0.3).timeout
 	dasha = true
 
 func dashanimate():
-	var d = dir if dir != Vector2.ZERO else last_dir
+	var d 
+	if dir == Vector2.ZERO:
+		d = last_dir
+	else:
+		d = dir
 	if d.x > 0:
 		if d.y > 0:
 			$AnimatedSprite2D.play("d_dr")
@@ -275,8 +285,12 @@ func spawnhps(number : int):
 	isspawninghps = true
 	candraw = true
 	isdrawing = true
+	spd = basespd * 0.2
 	var pos = Vector2(randf_range(0, get_viewport().get_visible_rect().size.x), randf_range(0, get_viewport().get_visible_rect().size.y))
 	if number == 0:
+		isspawninghps = false
+		isdrawing = false
+		spd = basespd
 		return
 	for i in range(number):
 		var circ = preload("res://tscns/circledrawer.tscn").instantiate()
@@ -285,23 +299,24 @@ func spawnhps(number : int):
 		circs.append(circ)
 		circ.queue_redraw()
 		pos = Vector2(randf_range(0, get_viewport().get_visible_rect().size.x), randf_range(0, get_viewport().get_visible_rect().size.y))
-	var t = 0
-	while t < 1:
+	var y = 0
+	while y < 1:
 		for i in circs:
 			if is_instance_valid(i):
 				i.radius -= 4
 				if i.radius <= 10:
 					i.queue_free()
 				i.queue_redraw()
-		t += 0.1
+		y += 0.1
 		await get_tree().create_timer(0.4).timeout
 	isspawninghps = false
 	isdrawing = false
+	spd = basespd
 
 func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> bool:
+	plr_line_times = []
 	candraw = true
-	lastspd = spd
-	spd *= 0.2
+	spd = basespd * 0.2
 	isgettingattacked = true
 	last_atker = who
 	atk_t = 0.0
@@ -316,6 +331,7 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 	line.name = "atk"
 	$hud.add_child(line)
 	viginette_tween(0.3)
+	line.default_color = Color(0.467, 0.369, 0.369, 1.0)
 
 	var segments = points.size() - 1
 	var current_seg = 0
@@ -368,8 +384,8 @@ func atk_sequence(points: Array, time: float, timestops: Array, who = self) -> b
 								SignalManager.atk_seq_ovr.emit(true)
 								viginette_tween(1.0, 0.05)
 								do_zoom(1.8)
-								hp += round(hpmod + 1)
-								stm += round(stmmod + 3)
+								hp += round(hpmod) / 2
+								stm += round(stmmod) + 1
 								await get_tree().create_timer(0.15).timeout
 								viginette_tween(0.0)
 								do_zoom(1.0)
@@ -438,13 +454,16 @@ func lineover():
 	get_tree().create_timer(0.2).timeout.connect(cd_over)
 
 func restore_stm():
-	if !isgettingattacked or !isdashing or !isdrawing:
-		await get_tree().create_timer(0.5).timeout
-		while !isgettingattacked or !isdashing or !isdrawing:
-			stm += 0.2
-			if stm > stmmod * base_stm:
-				stm = stmmod * base_stm
-			await get_tree().process_frame
+	if isgettingattacked or isdashing or isdrawing:
+		return
+	if stm < base_stm * stmmod:
+		if !isregening:
+			isregening = true
+			await get_tree().create_timer(0.5).timeout
+		stm += 5 * get_process_delta_time()
+		stm = min(stm, base_stm * stmmod)
+	else:
+		isregening = false
 
 func get_dmged(dmg, who):
 	hp -= round(dmg - (def * dmg) / 2)

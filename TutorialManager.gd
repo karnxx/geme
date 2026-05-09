@@ -129,7 +129,7 @@ func _process(delta: float) -> void:
 			t5over = true
 			tutext.text = "alr that was the tutorial. heres a boss fight ;)"
 			dummy.atk = 10
-			dummy.hp = 100
+			dummy.hp = 200
 			await get_tree().create_timer(5).timeout
 			dummy.canfballorsweep = true
 			dummy.cantap  = true
@@ -150,7 +150,7 @@ func _process(delta: float) -> void:
 		dummy.cantap = true
 		dummy.tutoaver = true
 		dummy.atk = 10
-		dummy.hp = 100
+		dummy.hp = 500
 		dummy.can_atk = true
 		dummy.can_spawn_proj = true
 		tutover = true

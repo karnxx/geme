@@ -28,8 +28,8 @@
 [ext_resource type="Texture2D" uid="uid://oyoeltrcw5oc" path="res://assets/plr/parry/stay/si_r.png" id="22_6s4i4"]
 [ext_resource type="Texture2D" uid="uid://cbu87bc4fek42" path="res://assets/plr/parry/stay/si_up.png" id="23_2jme3"]
 
-[sub_resource type="Curve" id="Curve_vjojb"]
-_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.24499999, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+[sub_resource type="Curve" id="Curve_m8bl4"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.26130652, 1), 0.0, 0.0, 0, 0, Vector2(0.98994976, 1), 0.0, 0.0, 0, 0]
 point_count = 3
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_t0vrg"]
@@ -497,7 +497,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_d",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -514,7 +514,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_dl",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -531,7 +531,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_dr",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -548,7 +548,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_l",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -565,7 +565,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_r",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -582,7 +582,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_u",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -599,7 +599,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_ul",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -616,7 +616,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"d_ur",
-"speed": 10.0
+"speed": 12.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -633,7 +633,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"dl",
-"speed": 5.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -650,7 +650,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"dr",
-"speed": 5.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -667,7 +667,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"l",
-"speed": 5.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -900,7 +900,7 @@ animations = [{
 
 [node name="plrr" type="CharacterBody2D" unique_id=1867672344]
 script = ExtResource("1_vjojb")
-curve = SubResource("Curve_vjojb")
+curve = SubResource("Curve_m8bl4")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2106295431]
 shape = SubResource("CircleShape2D_t0vrg")
@@ -952,5 +952,6 @@ script = ExtResource("2_t0vrg")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1970475635]
 scale = Vector2(3.1875, 2.8790321)
 sprite_frames = SubResource("SpriteFrames_qlord")
-animation = &"pi_d"
-frame_progress = 0.9697562
+animation = &"p_dl"
+frame = 4
+frame_progress = 1.0

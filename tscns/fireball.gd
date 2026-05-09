@@ -19,7 +19,8 @@ func _ready() -> void:
 func dissapear():
 	if is_plring:
 		return
-	user.free_return(false)
+	if is_instance_valid(user):
+		user.free_return(false)
 	queue_free()
 
 func world_to_screen(pos) -> Vector2:

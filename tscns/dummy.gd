@@ -86,6 +86,8 @@ func fireballround():
 
 func get_dmged(dmg):
 	hp -= dmg
+	if hp <= 0:
+		queue_free()
 
 func try_atk():
 	is_acting = true
@@ -168,10 +170,14 @@ func projectile(number, time=0.1):
 		get_parent().add_child(proj)
 		await get_tree().create_timer(time).timeout
 
+
 func randomtp():
+	var rand = randi()
+	
 	is_acting = true
 	var pos = plr.global_position
-	await get_tree().create_timer(0.5).timeout
+	if rand == 1:
+		await get_tree().create_timer(0.5).timeout
 	var tween = create_tween()
 	tween.tween_property(self, "global_position", pos, 0.3)
 	await get_tree().create_timer(2).timeout
