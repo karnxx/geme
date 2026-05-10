@@ -192,7 +192,7 @@ func _process(delta: float) -> void:
 			cama.activate_cutscene(0)
 			await get_tree().create_timer(2).timeout
 			plr.can_move = true
-			dummy.atk = 10
+			dummy.atk = 7
 			dummy.hp = 200
 			var twen = create_tween()
 			twen.tween_property(dummy,"modulate", Color(0.843, 0.0, 0.818, 1.0), 3)
@@ -204,6 +204,7 @@ func _process(delta: float) -> void:
 			dummy.can_atk = true
 			dummy.can_spawn_proj = true
 			busy = false
+			tutext.queue_free()
 		elif result == false:
 			plr.can_move = false
 			await cama.gopos(dummy.global_position)
