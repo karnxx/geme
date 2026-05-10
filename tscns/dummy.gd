@@ -39,6 +39,11 @@ var action_cooldown = 0.0
 func _process(delta: float) -> void:
 	
 	plr = get_parent().get_node('plrr')
+	if plr.global_position.x > global_position.x:
+		$AnimatedSprite2D.flip_h = true
+	else:
+		$AnimatedSprite2D.flip_h = false
+	
 	if can_move_box and plr:
 		$pivot.rotation = global_position.angle_to_point(plr.global_position)
 	if is_acting or !tutoaver:
@@ -83,7 +88,7 @@ func randomada():
 func fireballround():
 	is_acting = true
 	$AnimatedSprite2D.play("fireball")
-	projectile(10, 0.2)
+	projectile(15, 0.1)
 	await get_tree().create_timer(4).timeout
 	is_acting = false
 

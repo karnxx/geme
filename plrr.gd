@@ -178,7 +178,9 @@ func animate(dir):
 			$AnimatedSprite2D.play("u")
 
 func parry_over():
-	candraw = false
+	if !isgettingattacked:
+		candraw = false
+	print('candraw disabled via parry over')
 	spd = basespd
 	isstancing = false
 	viginette_tween(0)
@@ -194,6 +196,7 @@ func get_atked(sequence, dmg, who, type='melee'):
 			get_dmged(dmg, who)
 			return false
 		else:
+			candraw = true
 			return await atk_sequence(sequence[0], sequence[1], sequence[2], who)
 
 func dash():
@@ -421,7 +424,9 @@ func player_line():
 		if stm <= 0:
 			lineover()
 	if Input.is_action_just_released("lmb") and candraw and plrstart != null:
-		candraw = false
+		if !isgettingattacked:
+			candraw = false
+		print('candraw disabled via release')
 		plrstart = null
 		plrend = null
 		viginette_tween(0.3)
@@ -439,7 +444,9 @@ func lineover():
 	plrend = get_viewport().get_mouse_position()
 	current_line.add_point(plrend)
 	plr_line_times.append(atk_t)
-	candraw = false
+	if !isgettingattacked:
+		candraw = false
+	print('candraw disabled via lineover')
 	plrstart = null
 	plrend = null
 	viginette_tween(0.3)
@@ -461,3 +468,5 @@ func restore_stm():
 
 func get_dmged(dmg, who):
 	hp -= round(dmg - (def * dmg) / 2)
+	if hp <= 0:
+		get_tree().reload_current_scene()

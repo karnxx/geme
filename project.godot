@@ -21,6 +21,13 @@ InventoryManager="*uid://d1td4uameguyb"
 SignalManager="*uid://b2qyfkj82jfo7"
 TutorialManager="*uid://cpsqx0llinyjn"
 
+[display]
+
+window/size/mode=4
+window/size/resizable=false
+window/stretch/mode="viewport"
+window/stretch/aspect="expand"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg")
